@@ -11,6 +11,8 @@ require([
     "aps/ready!"],
 function (ResourceStore, when, array, Memory, xhr, registry, load, displayError, getDomains) {
 
+    registry.byId("grid").refresh();
+
     var domainStore = new ResourceStore({
         apsType: "http://aps-standard.org/types/dns/domain/1.0",
         target: "/aps/2/resources/",
@@ -24,60 +26,17 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
         idProperty: "aps.id"
     });
     
+    var storeArray=[];
+    var store = new Memory({data: storeArray});
 
     // получаем массив ссылок на домен. item.name содержит aps.id домена в POA
-    // poaDomIdArray - массив aps.id для ресурсов "http://aps-standard.org/types/dns/domain/1.0"
+    // isitupDomIdArray - массив aps.id для ресурсов типа "http://shelikhov.net/isitup2/isitup_domain/2.0"
     var isitupDomIdArray = [];
     isitup_domainStore.query().then(function(data) {
         array.forEach(data, function(item) {
             isitupDomIdArray.push(item.name)
         });
     });
-    console.log('===== isitupDomIdArray ====');
-    console.dir(isitupDomIdArray);
-
-    memory = new Memory();
-
-/*    isitup_domainStore.query().then(function(data) {
-        // data - то, что внутри.
-        console.log('===== query result ====');
-        console.dir(data);
-
-        array.forEach(data, function(item) {
-            console.log("==== item ====");
-            console.dir(item);
-            //memory.add({id: item.id, my_field: Math.random()});
-            console.log("==== aps.id ====");
-            console.dir(item.aps.id);
-
-            when(xhr("/aps/2/resources/" + item.aps.id + "/apsdomain", {method: "GET",  handleAs: "json"}),
-                function(getresult){
-                    console.log("==== getresult ====");
-                    console.log(getresult);
-                    if (getresult.length > 0) {
-                        console.log("есть связь c " + getresult[0].name);
-                        memory.add({id: item.aps.id, domain: item.name, });
-                    }
-                    else {
-                        console.log("связи нет");
-                    }
-                    
-                },
-                function(err) {displayError(err);}
-            );
-        });
-    });
-*/
-      var storeArray = [
-      ];
-
-    var store = new Memory({
-        data: storeArray,
-        idProperty: "name"
-        });
-    
-
-
 
    var widgets =
     ["aps/PageContainer", [
@@ -85,7 +44,7 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
             id: "grid",
             columns: [
                 {name: "POA domain", field: "name"},
-                {name: "Minitoring", field: "status"}],
+                {name: "Monitoring", field: "status"}],
             store: store,
             // selectionMode defines whether the selector will be a radiobutton ('single') or checkbox ('multiple')
             selectionMode: "multiple",
@@ -104,8 +63,6 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
                         onClick: function() {
                             // need to check if the user can be created, if not - no need to redirect to user-add view
                             when(getDomains(), function(result) {
-                                console.log("======================");
-                                console.log(result);
 //                                if (!result.users.length) {
   //                                  displayError(result.message);
     //                                return;
@@ -137,35 +94,18 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
         ]
     ]];
 
-    console.log("myMas");
-    var myMas = ["a86cdd1a-5093-4516-a384-45846b353a59", "a86cdd1a-5093-4516-a384-45846b353a60", "a86cdd1a-5093-4516-a384-45846b353a61"];
-    console.log(myMas);
-    console.dir(isitupDomIdArray);
 
-    //console.log("is equal?");
-    //console.log("val1 = " + isitupDomIdArray[0]);
-    //console.log("val2 = " + myMas[0]);
-   
-
-
+    // просматриваем все POA домены и выставляем Monitoring status в "yes", если есть ссылка на ресурс isitup_domain
     domainStore.query().then(function(data) {
-        console.dir(data); 
         var i=1;
         array.forEach(data, function(item) {
-            console.log("this is item.aps.id");
-            console.log(item.aps.id);
-                    console.log(" " + isitupDomIdArray[0]);
-                    console.log("val2 = " + myMas[0]);
-                    console.log(isitupDomIdArray[0] === myMas[0] );
-                    store.add({id: i, name: item.name, status: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes' });
-            
-            //store.put({id: i, name: item.name, prime: false});
+                     store.add({id: i, name: item.name, status: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes' });
             i++;
         });
 
         load(widgets);
     });
 
-registry.byId("grid").refresh();
+
 
 });
