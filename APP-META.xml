@@ -1,0 +1,123 @@
+<application packaged="2014-12-04T17:42:57" version="2.0" xmlns="http://aps-standard.org/ns/2">
+
+    <id>http://shelikhov.net/isitup2</id>
+    <name>isItUp2</name>
+    <version>1.03</version>
+    <release>1</release>
+    <vendor>
+        <name>Shelikhov</name>
+        <homepage>http://shelikhov.net/contact</homepage>
+    </vendor>
+    <packager>
+        <name>Shelikhov, Inc</name>
+        <homepage>http://shelikhov.net/contact</homepage>
+    </packager>
+	<presentation>
+		<summary>Domain isItUp</summary>
+		<description>The aplication allows to check if domain is available</description>
+		<icon path="images/clean.png"/>
+		<screenshot path="images/scr1.jpg">
+			<description>Everything is ok when your domain is up.</description>
+		</screenshot>
+		<screenshot path="images/scr2.jpg">
+			<description>Your face when domain is down. It is time to investigate the issue. </description>
+		</screenshot>
+		<changelog>
+			<version release="1" version="1.0">
+				<entry>Initial release.</entry>
+			</version>
+			<version release="4" version="1.0">
+				<entry>UI changes</entry>
+			</version>
+			<version release="5" version="1.0">
+				<entry>Canged 'patch' to 'upgrade' in APP-META.xml</entry>
+			</version>
+			<version release="1" version="1.03">
+				<entry>'services' service renamed to 'isitup_domains'. Properties 'name' and 'status' were added.</entry>
+			</version>
+			<version release="1" version="1.03">
+				<entry>Changes in upgrade match.</entry>
+			</version>
+		</changelog>
+		<categories>
+			<category>Samples</category>
+		</categories>
+		<navigation id="ccp" label="IsItUp Management">
+			<var name="context" type-id="http://shelikhov.net/isitup2/context/1.0"/>
+			<plugs-to id="http://www.aps-standard.org/ui/service"/>
+			<item id="context" label="Isitup">
+				<view id="isitup-domains-view" label="mysubscriptions" src="ui/mysubscriptions.html">
+					<view id="add-domain" label="add-domain" src="ui/add-domain.html">
+						<controls>
+							<cancel/>
+							<finish/>
+						</controls>
+					</view>
+				</view>
+			</item>
+		</navigation>
+
+	</presentation>
+
+    <license-agreement>
+        <free/>
+        <text>
+            <name>End-User License Agreement</name>
+            <url>http://opensource.org/licenses/bsd-license</url>
+        </text>
+    </license-agreement>
+    <upgrade match="version =lt= 1.99"/>
+
+    <service id="applications">
+		
+<schema path="schemas/applications.schema.gen"/>
+<code engine="php" path="scripts/applications.php"/>
+
+		<presentation>
+			<name>IsItUp Application</name>
+			<summary>IsItUp application global service</summary>
+			<infolinks>
+				<link class="deployment-guide" href="http://parallels.com/link-to-deployment-guide">Deployment Guide</link>
+				<link class="support" href="http://parallels.com/link-to-support">Support Guide</link>
+			</infolinks>
+		</presentation>
+	</service>
+<service id="contexts">
+		
+<schema path="schemas/contexts.schema.gen"/>
+<code engine="php" path="scripts/contexts.php"/>
+
+		<presentation>
+			<name>IsItUp Services Management </name>
+			<summary>IsItUp Services Management context for the customer</summary>
+			<infolinks>
+				<link class="deployment-guide" href="http://parallels.com/link-to-deployment-guide">Deployment Guide</link>
+				<link class="support" href="http://parallels.com/link-to-support">Support Guide</link>
+			</infolinks>
+			<entry-points>
+				<entry class="aps2-view" dst="http://shelikhov.net/isitup#isitup-domains-view">
+					<label>Status of domains</label>
+				</entry>
+			</entry-points>
+		</presentation>
+	</service>
+<service id="isitup_domains ">
+		
+<schema path="schemas/isitup_domains.schema.gen"/>
+<code engine="php" path="scripts/isitup_domains.php"/>
+
+		<presentation>
+			<name>IsItUp domains</name>
+			<summary>domains added for watching</summary>
+			<infolinks>
+				<link class="deployment-guide" href="http://parallels.com/link-to-deployment-guide">Deployment Guide</link>
+				<link class="support" href="http://parallels.com/link-to-support">Support Guide</link>
+			</infolinks>
+			<entry-points>
+				<entry class="aps2-view" dst="http://shelikhov.net/isitup#subscriptions.new-1">
+					<label>Add domain for watching</label>
+				</entry>
+			</entry-points>
+		</presentation>
+	</service>
+</application>

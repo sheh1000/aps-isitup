@@ -1,0 +1,10 @@
+{
+   "aps":{
+      "type":"http://shelikhov.net/isitup2/isitup_domain/2.0"
+   },
+   "apsdomain":{
+      "aps":{
+         "id":"a86cdd1a-5093-4516-a384-45846b353a59"
+      }
+   }
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:files xmlns="http://www.w3.org/2000/09/xmldsig#" xmlns:ns2="http://apstandard.com/ns/1">
+    <ns2:file name="APP-META.xml" size="4269" sha256="a1afb849d7744a7de89b4717c5848e8b6cd7f9049c34eb7f865f45b0d66e3428"/>
+    <ns2:file name="scripts/contexts.php" size="1293" sha256="c0640ff9bfe9ee54bd375ee0806aa4f3c03987caf1f98eb13dceafe5ed5f67e1"/>
+    <ns2:file name="scripts/isitup_domains.php" size="1102" sha256="317d33fadb01d5e0e606cc33f9b459929dae81d752a21bf51e4eacdafbeffce9"/>
+    <ns2:file name="scripts/applications.php" size="802" sha256="2ba66488286c462e638cec04334fe5458434f801b17c6cc3c4a9ad0424b210c2"/>
+    <ns2:file name="scripts/services.php" size="1101" sha256="90bd8c67dce92a6f318f3424e8d5329f3bcdea4358f098e6dc2b14f8d207dd7c"/>
+    <ns2:file name="schemas/contexts.schema.gen" size="999" sha256="6cc08d3a366b96683a13e1c77e2bbc9d2752740d44d8f1975a528bded89312d4"/>
+    <ns2:file name="schemas/isitup_domains.schema.gen" size="870" sha256="7d32c995369068db139d4d74f821194fc48927fa2f2a38edc30646818f08fe56"/>
+    <ns2:file name="schemas/applications.schema.gen" size="689" sha256="da6622e59c68b4093cd16d8b2c57cf885fe16b923382b0b17ecefd119364d9c7"/>
+    <ns2:file name="images/clean.png" size="3765" sha256="b2ba1b2ce4ce8cc3c44c9e3b685f7766a6341177b19a71a22361f45d3fc0513e"/>
+    <ns2:file name="images/icon.png" size="2061" sha256="b64a677330f5d9766631228f4298c5a1c1648e040470e29021a6aab6ab2c7941"/>
+    <ns2:file name="images/scr1.jpg" size="52693" sha256="6152ea270419e6c77834f7b3c4bb9cb735be123ab2fd2de502324d21a495c795"/>
+    <ns2:file name="images/scr2.jpg" size="27605" sha256="7d84c021880735849ddd95ee316f195f6426f97c02a52127208d86c299d00c8a"/>
+    <ns2:file name="images/scr3.jpg" size="94259" sha256="a63cb2e43ebd74dd2fbe66b6bcf446ebaaf7d8451a0030cdd49df7747f0aa018"/>
+    <ns2:file name="ui/js/displayError.js" size="1163" sha256="139e7ba84f8a5d6716932fd91aa6588a2cf5b6d99265431f033cee370d21f3d2"/>
+    <ns2:file name="ui/js/users.js" size="3397" sha256="5ca6c6b7da1bad0711691c47efee668422032cbf4b1079fe6a6c0b3700da0d5c"/>
+    <ns2:file name="ui/mysubscriptions.html" size="149" sha256="f0422cacaedf351e937c16e2c6381db344d1d33f694379952a4f93b1fbd500e9"/>
+    <ns2:file name="ui/sftp-config.json" size="1463" sha256="42fde7bc295df060e5cdb7d1fec84879324e11666381435aa800e89829139ffa"/>
+</ns2:files>
