@@ -24,15 +24,17 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
         idProperty: "aps.id"
     });
     
+
     // получаем массив ссылок на домен. item.name содержит aps.id домена в POA
-    
+    // poaDomIdArray - массив aps.id для ресурсов "http://aps-standard.org/types/dns/domain/1.0"
     var isitupDomIdArray = [];
     isitup_domainStore.query().then(function(data) {
-        console.log('===== isitupDomIdArray ====');
-        console.dir(data);
-        isitupDomIdArray=data;
+        array.forEach(data, function(item) {
+            isitupDomIdArray.push(item.name)
+        });
     });
-
+    console.log('===== isitupDomIdArray ====');
+    console.dir(isitupDomIdArray);
 
     memory = new Memory();
 
@@ -67,11 +69,6 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
     });
 */
       var storeArray = [
-        {name: "one", prime: false },
-        {name: "two", even: true, prime: true},
-        {name: "three", prime: true},
-        {name: "four", even: true, prime: false},
-        {name: "five", prime: true}
       ];
 
     var store = new Memory({
@@ -81,28 +78,14 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
     
 
 
-    console.log("SASDASDADS");
-    console.dir(store);
-
-    console.log("Array for each");
-    array.forEach(store.query(), function(item) {
-        console.log(item);
-    });
-
-    console.log("idProperty");
-    console.dir(store.idProperty);
-
-        console.log("store(Memory)");
-        console.dir(store);
- 
 
    var widgets =
     ["aps/PageContainer", [
         ["aps/Grid", {
             id: "grid",
             columns: [
-                {name: "name", field: "name"},
-                {name: "prime", field: "prime"}],
+                {name: "POA domain", field: "name"},
+                {name: "Minitoring", field: "status"}],
             store: store,
             // selectionMode defines whether the selector will be a radiobutton ('single') or checkbox ('multiple')
             selectionMode: "multiple",
@@ -154,15 +137,29 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
         ]
     ]];
 
+    console.log("myMas");
+    var myMas = ["a86cdd1a-5093-4516-a384-45846b353a59", "a86cdd1a-5093-4516-a384-45846b353a60", "a86cdd1a-5093-4516-a384-45846b353a61"];
+    console.log(myMas);
+    console.dir(isitupDomIdArray);
+
+    //console.log("is equal?");
+    //console.log("val1 = " + isitupDomIdArray[0]);
+    //console.log("val2 = " + myMas[0]);
+   
+
 
     domainStore.query().then(function(data) {
         console.dir(data); 
-        var i=6;
+        var i=1;
         array.forEach(data, function(item) {
-            //store.add({id: i, name: item.name, status: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes' });
-            console.log("here is domain name");
-            console.log(item.name);
-            store.put({id: i, name: item.name, prime: false});
+            console.log("this is item.aps.id");
+            console.log(item.aps.id);
+                    console.log(" " + isitupDomIdArray[0]);
+                    console.log("val2 = " + myMas[0]);
+                    console.log(isitupDomIdArray[0] === myMas[0] );
+                    store.add({id: i, name: item.name, status: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes' });
+            
+            //store.put({id: i, name: item.name, prime: false});
             i++;
         });
 
