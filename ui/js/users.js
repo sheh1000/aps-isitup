@@ -1,7 +1,10 @@
 require([
     "aps/ResourceStore",
     "dojo/when",
+    "dojo/Deferred",
+    "dojo/promise/all",
     "dojo/_base/array",
+    "dojo/request/xhr",
     "aps/Memory",
     "aps/xhr",
     "dijit/registry",
@@ -9,9 +12,27 @@ require([
     "./js/displayError.js",
     "./js/getDomains.js",
     "aps/ready!"],
-function (ResourceStore, when, array, Memory, xhr, registry, load, displayError, getDomains) {
+function (ResourceStore, when, Deferred, all, array, dojoxhr, Memory, xhr, registry, load, displayError, getDomains) {
 
-    registry.byId("grid").refresh();
+
+    function isitup_requets(domainName) {
+        return new Promise(function(resolve, reject) {
+        when(dojoxhr("https://endpoint.only.dshelikhov.apsdemo.org/isitup22/parse.php?domain=" + 
+                                domainName, { method: "GET", handleAs: "json"}), 
+            function(getresult){   
+            },
+            function(err) {displayError(err);}
+        );
+        });
+    };
+
+    var testString = "google.com";
+    isitup_requets(testString).then(function(response) {
+        // do something
+        console.log(response);
+    }, function(Error) {
+        console.log(Error);
+    });
 
     var domainStore = new ResourceStore({
         apsType: "http://aps-standard.org/types/dns/domain/1.0",
@@ -38,13 +59,33 @@ function (ResourceStore, when, array, Memory, xhr, registry, load, displayError,
         });
     });
 
+
+/* function testRenderCell("example.com"){
+   // Not sure what 'options' refers to; I didn't need a fourth param
+ (function(d, s) {
+    // Start a new script tag, get position to insert.
+    var t = d.createElement(s),
+        e = d.getElementsByTagName(s)[0];
+
+    // Set the attributes of the script tag.
+    t.src  = "https://isitup.org/widget/widget.js";
+
+    // Insert the script tag.
+    e.parentNode.insertBefore(t, e);
+}(document, "script"));
+ return "asdffa";
+    }
+*/
+
    var widgets =
     ["aps/PageContainer", [
         ["aps/Grid", {
             id: "grid",
             columns: [
                 {name: "POA domain", field: "name"},
-                {name: "Monitoring", field: "status"}],
+                {name: "Monitoring", field: "status"},
+                {name: "Test", field: "status"}
+                ],
             store: store,
             // selectionMode defines whether the selector will be a radiobutton ('single') or checkbox ('multiple')
             selectionMode: "multiple",
