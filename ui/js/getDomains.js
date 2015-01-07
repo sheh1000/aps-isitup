@@ -10,8 +10,8 @@ define(["aps/ResourceStore", "dojo/Deferred", "dojo/when"],
 
                         // we need to get both collections to compare later
                         var domainStore = new ResourceStore({
-                                target: "/aps/2/resources/",
-                                apsType: "hhttp://parallels.com/aps/types/pa/dns/zone/1.0"
+                                apsType: "http://parallels.com/aps/types/pa/dns/zone/1.0",
+                                target: "/aps/2/resources/"
                         });
 
                         var isitup_domainStore = new ResourceStore({

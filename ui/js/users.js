@@ -5,34 +5,55 @@ require([
     "dojo/promise/all",
     "dojo/_base/array",
     "dojo/request/xhr",
+    "dojox/mvc/getStateful",
     "aps/Memory",
     "aps/xhr",
     "dijit/registry",
     "aps/load",
     "./js/displayError.js",
     "./js/getDomains.js",
+    "./js/getStatus.js",
+    "./js/getDomainApsId.js",
     "aps/ready!"],
-function (ResourceStore, when, Deferred, all, array, dojoxhr, Memory, xhr, registry, load, displayError, getDomains) {
+function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memory, xhr, registry, load, displayError, getDomains, getStatus, getDomainApsId) {
 
 
     function isitup_requets(domainName) {
         return new Promise(function(resolve, reject) {
         when(dojoxhr("https://endpoint.only.dshelikhov.apsdemo.org/isitup22/parse.php?domain=" + 
                                 domainName, { method: "GET", handleAs: "json"}), 
-            function(getresult){   
+            function(resolve){
+                //console.dir(resolve);
+                return Deferred.resolve(resolve);
             },
-            function(err) {displayError(err);}
+            function(reject) {displayError(reject);}
         );
         });
     };
 
-    var testString = "google.com";
-    isitup_requets(testString).then(function(response) {
-        // do something
-        console.log(response);
-    }, function(Error) {
-        console.log(Error);
-    });
+/*    var isResult = getStatus("rambler.ru");
+    isResult.then(function(value){
+        console.log("!!!!!!!!!!!!!!!!!!!!!");
+        console.dir(value);
+    // Do something when the process completes
+  }, function(err){
+    // Do something when the process errors out
+  }, function(update){
+    // Do something when the process provides progress information
+  });
+*/
+
+var isResult = getDomainApsId("domain1.com");
+    isResult.then(function(value){
+        console.log("++++++++++++++");
+        console.dir(value);
+    // Do something when the process completes
+  }, function(err){
+    // Do something when the process errors out
+  }, function(update){
+    // Do something when the process provides progress information
+  });
+
 
     var domainStore = new ResourceStore({
         apsType: "http://aps-standard.org/types/dns/domain/1.0",
@@ -50,12 +71,12 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, Memory, xhr, regis
     var storeArray=[];
     var store = new Memory({data: storeArray});
 
-    // получаем массив ссылок на домен. item.name содержит aps.id домена в POA
+    // получаем массив ссылок на домен. item.dom_id содержит aps.id домена в POA
     // isitupDomIdArray - массив aps.id для ресурсов типа "http://shelikhov.net/isitup2/isitup_domain/2.0"
     var isitupDomIdArray = [];
     isitup_domainStore.query().then(function(data) {
         array.forEach(data, function(item) {
-            isitupDomIdArray.push(item.name)
+            isitupDomIdArray.push(item.dom_id)
         });
     });
 
@@ -77,14 +98,32 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, Memory, xhr, regis
     }
 */
 
+    // creating a resource store to add the user later, target can be either the collection 'users' in organization resource
+    // or just /aps/2/resources but in this case link to organization needs to be specified manually in model for new user
+    var storeAddDomain = new ResourceStore({
+        target: "/aps/2/resources/" + aps.context.vars.context.aps.id + "/isitup_domain"
+    });
+
+    // creating a modelUser object skeleton to be filled later from user selections
+    var modelUser =  getStateful({
+        aps: {type: "http://shelikhov.net/isitup2/isitup_domain/2.0"},
+        dom_id: "",
+        name: "",
+        status: "",
+        apsdomain: { aps: { id: "" } }
+    });
+
+    //modelUser.set("email",
+
+
    var widgets =
     ["aps/PageContainer", [
         ["aps/Grid", {
             id: "grid",
             columns: [
                 {name: "POA domain", field: "name"},
-                {name: "Monitoring", field: "status"},
-                {name: "Test", field: "status"}
+                {name: "Monitoring", field: "monitoring"},
+                {name: "Status", field: "status"}
                 ],
             store: store,
             // selectionMode defines whether the selector will be a radiobutton ('single') or checkbox ('multiple')
@@ -102,15 +141,29 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, Memory, xhr, regis
                         // autoBusy: false means the button will not be disabled after clicking - no need to call cancel() in onClick handler
                         autoBusy: false,
                         onClick: function() {
+                            // console.log(this, arguments);
+
+                            // to operate on grid's data we need to find what was selected
+                            var grid = registry.byId("grid");
+                            var sel = grid.get("selectionArray");
+
+                            for (var i=0; i<sel.length; i++){
+                                console.dir(store.get(sel[i]));
+                                modelUser.set("name",store.get(sel[i]).name);
+                                modelUser.set("dom_id",store.get(sel[i]).dom_id);
+                                when(storeAddDomain.put(modelUser), function() {
+                                    grid.refresh();
+                                });
                             // need to check if the user can be created, if not - no need to redirect to user-add view
-                            when(getDomains(), function(result) {
+ //                           when(getDomains(), function(result) {
 //                                if (!result.users.length) {
   //                                  displayError(result.message);
     //                                return;
       //                          }
-                                aps.apsc.gotoView("domain-add");
-                            });
+      //                          aps.apsc.gotoView("domain-add");
+      //                      });
                         }
+                    }
                 }],
                 ["aps/ToolbarButton", {
                     label: "Stop watch for domain",
@@ -124,7 +177,7 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, Memory, xhr, regis
                         var sel = grid.get("selectionArray");
 
                         for (var i=0; i<sel.length; i++){
-                            when(domainStore.remove(sel[i]), function() {
+                            when(store.remove(sel[i]), function() {
                                 grid.refresh();
                             }
                         );
@@ -140,7 +193,7 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, Memory, xhr, regis
     domainStore.query().then(function(data) {
         var i=1;
         array.forEach(data, function(item) {
-                     store.add({id: i, name: item.name, status: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes' });
+                     store.add({id: i, name: item.name, monitoring: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes', status: item.status, apsId: item.aps.id });
             i++;
         });
 
