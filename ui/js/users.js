@@ -43,16 +43,7 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
   });
 */
 
-var isResult = getDomainApsId("domain1.com");
-    isResult.then(function(value){
-        console.log("++++++++++++++");
-        console.dir(value);
-    // Do something when the process completes
-  }, function(err){
-    // Do something when the process errors out
-  }, function(update){
-    // Do something when the process provides progress information
-  });
+
 
 
     var domainStore = new ResourceStore({
@@ -104,14 +95,7 @@ var isResult = getDomainApsId("domain1.com");
         target: "/aps/2/resources/" + aps.context.vars.context.aps.id + "/isitup_domain"
     });
 
-    // creating a modelUser object skeleton to be filled later from user selections
-    var modelUser =  getStateful({
-        aps: {type: "http://shelikhov.net/isitup2/isitup_domain/2.0"},
-        dom_id: "",
-        name: "",
-        status: "",
-        apsdomain: { aps: { id: "" } }
-    });
+
 
     //modelUser.set("email",
 
@@ -141,19 +125,31 @@ var isResult = getDomainApsId("domain1.com");
                         // autoBusy: false means the button will not be disabled after clicking - no need to call cancel() in onClick handler
                         autoBusy: false,
                         onClick: function() {
-                            // console.log(this, arguments);
-
                             // to operate on grid's data we need to find what was selected
                             var grid = registry.byId("grid");
                             var sel = grid.get("selectionArray");
 
                             for (var i=0; i<sel.length; i++){
-                                console.dir(store.get(sel[i]));
-                                modelUser.set("name",store.get(sel[i]).name);
-                                modelUser.set("dom_id",store.get(sel[i]).dom_id);
-                                when(storeAddDomain.put(modelUser), function() {
-                                    grid.refresh();
-                                });
+                                var isResult = getDomainApsId(store.get(sel[i]).name);
+                                isResult.then(function(value){
+                                    // creating a modelUser object skeleton to be filled later from user selections
+                                    var modelUser =  getStateful({
+                                        aps: {type: "http://shelikhov.net/isitup2/isitup_domain/2.0"},
+                                        dom_id: "",
+                                        name: "",
+                                        status: "",
+                                        apsdomain: { aps: { id: "" } }
+                                    });
+
+                                    modelUser.name =  value[0].name;
+                                    modelUser.dom_id = value[0].apsId;
+                                    modelUser.apsdomain.aps.id = value[0].apsId;
+                                    when(storeAddDomain.put(modelUser), function() {
+                                        grid.refresh();
+                                    });
+                                    // Do something when the process completes
+                                  });
+                                
                             // need to check if the user can be created, if not - no need to redirect to user-add view
  //                           when(getDomains(), function(result) {
 //                                if (!result.users.length) {
