@@ -14,9 +14,18 @@ require([
     "./js/getDomains.js",
     "./js/getStatus.js",
     "./js/getDomainApsId.js",
+    "./js/getResourceId.js",
     "aps/ready!"],
-function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memory, xhr, registry, load, displayError, getDomains, getStatus, getDomainApsId) {
+function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memory, xhr, registry, load, displayError, getDomains, getStatus, getDomainApsId, getResourceId) {
 
+    // creating a modelUser object skeleton to be filled later from user selections
+    var modelUser =  getStateful({
+        aps: {type: "http://shelikhov.net/isitup2/isitup_domain/2.0"},
+        dom_id: "",
+        name: "",
+        status: "",
+        apsdomain: { aps: { id: "" } }
+    });
 
     function isitup_requets(domainName) {
         return new Promise(function(resolve, reject) {
@@ -30,21 +39,6 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
         );
         });
     };
-
-/*    var isResult = getStatus("rambler.ru");
-    isResult.then(function(value){
-        console.log("!!!!!!!!!!!!!!!!!!!!!");
-        console.dir(value);
-    // Do something when the process completes
-  }, function(err){
-    // Do something when the process errors out
-  }, function(update){
-    // Do something when the process provides progress information
-  });
-*/
-
-
-
 
     var domainStore = new ResourceStore({
         apsType: "http://aps-standard.org/types/dns/domain/1.0",
@@ -62,15 +56,11 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
     var storeArray=[];
     var store = new Memory({data: storeArray});
 
-    // получаем массив ссылок на домен. item.dom_id содержит aps.id домена в POA
-    // isitupDomIdArray - массив aps.id для ресурсов типа "http://shelikhov.net/isitup2/isitup_domain/2.0"
-    var isitupDomIdArray = [];
-    isitup_domainStore.query().then(function(data) {
-        array.forEach(data, function(item) {
-            isitupDomIdArray.push(item.dom_id)
-        });
+    var resource_id = getResourceId("domain2.com");
+    resource_id.then(function(value){
+        console.log("=== getResourceId ===");
+        console.log(value);
     });
-
 
 /* function testRenderCell("example.com"){
    // Not sure what 'options' refers to; I didn't need a fourth param
@@ -82,7 +72,7 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
     // Set the attributes of the script tag.
     t.src  = "https://isitup.org/widget/widget.js";
 
-    // Insert the script tag.
+    // Insert the scriptstoreAddDomain tag.
     e.parentNode.insertBefore(t, e);
 }(document, "script"));
  return "asdffa";
@@ -131,19 +121,13 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
 
                             for (var i=0; i<sel.length; i++){
                                 var isResult = getDomainApsId(store.get(sel[i]).name);
-                                isResult.then(function(value){
-                                    // creating a modelUser object skeleton to be filled later from user selections
-                                    var modelUser =  getStateful({
-                                        aps: {type: "http://shelikhov.net/isitup2/isitup_domain/2.0"},
-                                        dom_id: "",
-                                        name: "",
-                                        status: "",
-                                        apsdomain: { aps: { id: "" } }
-                                    });
+                                isResult.then(function(arrayResult){
 
-                                    modelUser.name =  value[0].name;
-                                    modelUser.dom_id = value[0].apsId;
-                                    modelUser.apsdomain.aps.id = value[0].apsId;
+                                    console.log(arrayResult[0].name);
+                                    console.log(arrayResult[0].apsId);
+                                    modelUser.name =  arrayResult[0].name;
+                                    modelUser.dom_id = arrayResult[0].apsId;
+                                    modelUser.apsdomain.aps.id = arrayResult[0].apsId;
                                     when(storeAddDomain.put(modelUser), function() {
                                         grid.refresh();
                                     });
@@ -173,6 +157,20 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
                         var sel = grid.get("selectionArray");
 
                         for (var i=0; i<sel.length; i++){
+                            console.log(" === sel[i] === ");
+                            console.dir(sel[i]);
+
+                            getResourceId(store.get(sel[i]).name).then(function(value){
+                                console.log("=== getResourceId ===");
+                                console.log(value);
+                            });
+
+                            isitup_domainStore.query().then(function(data) {
+                                array.forEach(data, function(item) {
+                                    isitupDomIdArray.push(item.dom_id)
+                                });
+                            });
+                            
                             when(store.remove(sel[i]), function() {
                                 grid.refresh();
                             }
@@ -185,15 +183,23 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
     ]];
 
 
-    // просматриваем все POA домены и выставляем Monitoring status в "yes", если есть ссылка на ресурс isitup_domain
-    domainStore.query().then(function(data) {
-        var i=1;
+    var isitupDomIdArray = [];
+    
+    isitup_domainStore.query().then(function(data) {
         array.forEach(data, function(item) {
-                     store.add({id: i, name: item.name, monitoring: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes', status: item.status, apsId: item.aps.id });
+            isitupDomIdArray.push(item.dom_id); // array contains a list of aps.id for resources "http://shelikhov.net/isitup2/isitup_domain/2.0" 
+        });
+    }).then(function(){ 
+        domainStore.query().then(function(data) {
+        var i=1;
+        array.forEach(data, function(item) { // просматриваем все POA домены и выставляем Monitoring status в "yes", если есть ссылка на ресурс isitup_domain:
+                    store.add({id: i, name: item.name, monitoring: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes', status: item.status, apsId: item.aps.id });
             i++;
         });
 
         load(widgets);
+        });
+    
     });
 
 
