@@ -56,28 +56,7 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
     var storeArray=[];
     var store = new Memory({data: storeArray});
 
-    var resource_id = getResourceId("domain2.com");
-    resource_id.then(function(value){
-        console.log("=== getResourceId ===");
-        console.log(value);
-    });
 
-/* function testRenderCell("example.com"){
-   // Not sure what 'options' refers to; I didn't need a fourth param
- (function(d, s) {
-    // Start a new script tag, get position to insert.
-    var t = d.createElement(s),
-        e = d.getElementsByTagName(s)[0];
-
-    // Set the attributes of the script tag.
-    t.src  = "https://isitup.org/widget/widget.js";
-
-    // Insert the scriptstoreAddDomain tag.
-    e.parentNode.insertBefore(t, e);
-}(document, "script"));
- return "asdffa";
-    }
-*/
 
     // creating a resource store to add the user later, target can be either the collection 'users' in organization resource
     // or just /aps/2/resources but in this case link to organization needs to be specified manually in model for new user
@@ -119,31 +98,30 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
                             var grid = registry.byId("grid");
                             var sel = grid.get("selectionArray");
 
-                            for (var i=0; i<sel.length; i++){
+                            for (var i=0; i<sel.length; i++) {
                                 var isResult = getDomainApsId(store.get(sel[i]).name);
-                                isResult.then(function(arrayResult){
+                                isResult.then(function(arrayResult) {
 
-                                    console.log(arrayResult[0].name);
-                                    console.log(arrayResult[0].apsId);
                                     modelUser.name =  arrayResult[0].name;
                                     modelUser.dom_id = arrayResult[0].apsId;
                                     modelUser.apsdomain.aps.id = arrayResult[0].apsId;
-                                    when(storeAddDomain.put(modelUser), function() {
-                                        grid.refresh();
+                                    
+                                    getResourceId(modelUser.name).then(function(resultResID){
+                                        
+                                        console.log("resultResID.length");
+                                        console.log(resultResID.length);
+
+                                        if (resultResID.length == 0) { // add resource only if it is not existing
+                                           when(storeAddDomain.put(modelUser), function() {
+                                               grid.refresh();
+                                               aps.apsc.gotoView("isitup-domains-view");
+                                           });
+                                        }
                                     });
-                                    // Do something when the process completes
-                                  });
-                                
-                            // need to check if the user can be created, if not - no need to redirect to user-add view
- //                           when(getDomains(), function(result) {
-//                                if (!result.users.length) {
-  //                                  displayError(result.message);
-    //                                return;
-      //                          }
-      //                          aps.apsc.gotoView("domain-add");
-      //                      });
+                                });
+                            }
+                        grid.refresh();
                         }
-                    }
                 }],
                 ["aps/ToolbarButton", {
                     label: "Stop watch for domain",
@@ -157,25 +135,24 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
                         var sel = grid.get("selectionArray");
 
                         for (var i=0; i<sel.length; i++){
-                            console.log(" === sel[i] === ");
-                            console.dir(sel[i]);
 
-                            getResourceId(store.get(sel[i]).name).then(function(value){
-                                console.log("=== getResourceId ===");
-                                console.log(value);
-                            });
+                            // remove linked resource isitup_domain
+                            console.log("store.get(sel[i]).name");
+                            console.log(store.get(sel[i]).name);
 
-                            isitup_domainStore.query().then(function(data) {
-                                array.forEach(data, function(item) {
-                                    isitupDomIdArray.push(item.dom_id)
+                            getResourceId(store.get(sel[i]).name).then(function(resultResID){
+                                isitup_domainStore.query().then(function(){
+                                    if (resultResID.length > 0) { // if resource is existing then delete it:
+                                        when(isitup_domainStore.remove(resultResID), function() {
+                                            grid.refresh();
+                                            aps.apsc.gotoView("isitup-domains-view");
+                                        });
+
+                                    }
                                 });
                             });
-                            
-                            when(store.remove(sel[i]), function() {
-                                grid.refresh();
-                            }
-                        );
                         }
+                        grid.refresh();
                     }
                 }]
             ]]]

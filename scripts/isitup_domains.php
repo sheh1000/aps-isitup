@@ -1,6 +1,5 @@
 <?php
 define('APS_DEVELOPMENT_MODE', true);
-require_once "logger.php";
 require_once "aps/2/runtime.php";
 
 /**
@@ -19,6 +18,13 @@ class isitup_domain extends APS\ResourceBase {
 	* @link("http://aps-standard.org/types/dns/domain/1.0")
 	*/
 	public $apsdomain;
+	
+	/**
+	 * @type(string)
+	 * @title("dom_id")
+	 * Description("APS ID of the domain")
+	 */
+	public $dom_id;
 	
 	/**
 	* @type(string)
@@ -55,37 +61,60 @@ class isitup_domain extends APS\ResourceBase {
     * @param()
     */
 	public function getstatus() {
-		$this->logger("Retrieve domain status. Begin");
+		$logger = \APS\LoggerRegistry::get();
+		$logger->setLogFile("isitup.log");
+		\APS\LoggerRegistry::get()->info("--- getstatus Begin ---");
 
-		$this->logger($this->isitup_domain->aps->id);
 		function get_info($domain) {
-        
-        //$url = "http://isitup.org/" . $domain . ".json";
-		$url = "http://isitup.org/" . "test.com" . ".json";
-        
-        $options = array(
-                'http'=>array(
-                'method'=>"GET",
-                'header'=>"Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n" .
-                "User-Agent:Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36\r\n" // as a browser
-                )
-        );
+        		$url = "http://isitup.org/" . $domain . ".json";
+			
+        		$options = array(
+                	'http'=>array(
+                	'method'=>"GET",
+                	'header'=>"Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n" .
+                	"User-Agent:Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36\r\n" // as a browser
+                	)
+	        	);
+	
+	        	$context = stream_context_create($options);
+	
+	        	//sending GET request and gettting the response
+	        	$file = file_get_contents($url, false, $context);
+			\APS\LoggerRegistry::get()->info($file);
+	        	echo $file;
+	       		$obj =  json_decode($file, true);
+	        //header('Content-Type: application/json');
+	        //echo  json_encode($file);
+	        	return $obj; 
+		}
 
-        $context = stream_context_create($options);
+		//get_info(htmlspecialchars($_GET["domain"]));
+		
+		$apsc = \APS\Request::getController();
+		
+		$obj = get_info($this->name) ;
+		\APS\LoggerRegistry::get()->info(" --- gettype --- ");
+		\APS\LoggerRegistry::get()->info( gettype($obj) );
 
-        //sending GET request and gettting the response
-        $file = file_get_contents($url, false, $context);
-        $this->logger("$file contains: " . $file);
-        echo $file;
-        //$obj =  json_decode($file, true);
-        //header('Content-Type: application/json');
-        //echo  json_encode($file);
-        //return $obj->{$param};
-}
+                \APS\LoggerRegistry::get()->info(" --- obj --- ");
+                \APS\LoggerRegistry::get()->info( print_r($obj, true) );
 
-get_info(htmlspecialchars($_GET["domain"]));
 
-		$this->logger("Retrieve domain status. End");
+		\APS\LoggerRegistry::get()->info(" --- status_code --- ");
+                \APS\LoggerRegistry::get()->info(  print_r($obj["status_code"]) );
+
+
+
+		$this->status = $obj["status_code"];
+		switch ($obj["status_code"]) {
+    			case 1: $this->status = "online"; break;
+    			case 2: $this->status = "offline"; break;
+    			case 3: $this->status = "error";
+		}
+
+		$apsc->updateResource($this);
+		
+
 	}
 	
 	public function activate_domain(){
