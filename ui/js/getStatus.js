@@ -1,9 +1,9 @@
-define(["dojo/Deferred", "dojo/request/xhr"], function (  Deferred, dojoxhr ) {
+define(["dojo/Deferred", "aps/xhr"], function (  Deferred, xhr ) {
 
-    return function (domainName) {
+    return function (apsID) {
 		
 		var deferredResult = new Deferred();
-		deferredResult = dojoxhr("https://endpoint.only.dshelikhov.apsdemo.org/isitup1/parse.php?domain=" + domainName, { 
+		deferredResult = xhr("/aps/2/resources/" + apsID + "/getstatus", { 
 			method: "GET", 
 			handleAs: "json"
 		});

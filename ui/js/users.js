@@ -2,6 +2,7 @@ require([
     "aps/ResourceStore",
     "dojo/when",
     "dojo/Deferred",
+    "dojo/promise/Promise",
     "dojo/promise/all",
     "dojo/_base/array",
     "dojo/request/xhr",
@@ -16,7 +17,7 @@ require([
     "./js/getDomainApsId.js",
     "./js/getResourceId.js",
     "aps/ready!"],
-function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memory, xhr, registry, load, displayError, getDomains, getStatus, getDomainApsId, getResourceId) {
+function (ResourceStore, when, Deferred, Promise, all, array, dojoxhr, getStateful, Memory, xhr, registry, load, displayError, getDomains, getStatus, getDomainApsId, getResourceId) {
 
     // creating a modelUser object skeleton to be filled later from user selections
     var modelUser =  getStateful({
@@ -26,19 +27,6 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
         status: "",
         apsdomain: { aps: { id: "" } }
     });
-
-    function isitup_requets(domainName) {
-        return new Promise(function(resolve, reject) {
-        when(dojoxhr("https://endpoint.only.dshelikhov.apsdemo.org/isitup22/parse.php?domain=" + 
-                                domainName, { method: "GET", handleAs: "json"}), 
-            function(resolve){
-                //console.dir(resolve);
-                return Deferred.resolve(resolve);
-            },
-            function(reject) {displayError(reject);}
-        );
-        });
-    };
 
     var domainStore = new ResourceStore({
         apsType: "http://aps-standard.org/types/dns/domain/1.0",
@@ -56,17 +44,11 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
     var storeArray=[];
     var store = new Memory({data: storeArray});
 
-
-
     // creating a resource store to add the user later, target can be either the collection 'users' in organization resource
     // or just /aps/2/resources but in this case link to organization needs to be specified manually in model for new user
     var storeAddDomain = new ResourceStore({
         target: "/aps/2/resources/" + aps.context.vars.context.aps.id + "/isitup_domain"
     });
-
-
-
-    //modelUser.set("email",
 
 
    var widgets =
@@ -160,21 +142,52 @@ function (ResourceStore, when, Deferred, all, array, dojoxhr, getStateful, Memor
     ]];
 
 
-    var isitupDomIdArray = [];
-    
-    isitup_domainStore.query().then(function(data) {
-        array.forEach(data, function(item) {
-            isitupDomIdArray.push(item.dom_id); // array contains a list of aps.id for resources "http://shelikhov.net/isitup2/isitup_domain/2.0" 
-        });
-    }).then(function(){ 
-        domainStore.query().then(function(data) {
-        var i=1;
-        array.forEach(data, function(item) { // просматриваем все POA домены и выставляем Monitoring status в "yes", если есть ссылка на ресурс isitup_domain:
-                    store.add({id: i, name: item.name, monitoring: isitupDomIdArray.indexOf(item.aps.id) == -1 ? 'no' : 'yes', status: item.status, apsId: item.aps.id });
-            i++;
-        });
+function findHash(hash, data) {
+  var dataLen = data.length;
+  for (dataLen > 0; dataLen--; ) {
+    if (data[dataLen].dom_id == hash) {
+      return data[dataLen].status;
+    }
+  }
+  return false;
+}
 
-        load(widgets);
+    var isitupDomIdArray = [];
+    var promises = [];
+    var array_idomains;
+
+    isitup_domainStore.query().then( function(data) {
+        console.log(" --- 1 --- ", data);
+         return all(data.map(function(item) {
+            isitupDomIdArray.push( {dom_id: item.dom_id, status: item.status} ); // array contains a list of aps.id for resources "http://shelikhov.net/isitup2/isitup_domain/2.0" 
+            array_idomains = data;
+            return xhr.get('/aps/2/resources/' + item.aps.id + '/getstatus');
+        }));
+    }).then(function(v){ 
+        console.log(" --- Saved ---- ");
+        console.dir(array_idomains);
+
+        domainStore.query().then(function(poa_domains) {
+            console.log(" --- 3 --- ");
+            console.dir(poa_domains);
+            var i=1;
+            poa_domains.forEach( function(poaDomain) { // просматриваем все POA домены и выставляем Monitoring status в "yes", если есть ссылка на ресурс isitup_domain:
+                        //console.dir(item);
+                        console.log("======= hash search =====");
+                        console.log("====== id ======", poaDomain.aps.id);
+                        console.dir(array_idomains);
+                        console.dir( findHash(poaDomain.aps.id, array_idomains) );
+                        store.add({
+                            id: i, 
+                            name: poaDomain.name, 
+                            monitoring: findHash(poaDomain.aps.id, array_idomains) == false ? 'no' : 'yes', 
+                            status: findHash(poaDomain.aps.id, array_idomains), 
+                            apsId: poaDomain.aps.id 
+                        });
+                i++;
+            });
+            load(widgets);
+
         });
     
     });
