@@ -13,11 +13,10 @@ require([
     "aps/load",
     "./js/displayError.js",
     "./js/getDomains.js",
-    "./js/getStatus.js",
     "./js/getDomainApsId.js",
     "./js/getResourceId.js",
     "aps/ready!"],
-function (ResourceStore, when, Deferred, Promise, all, array, dojoxhr, getStateful, Memory, xhr, registry, load, displayError, getDomains, getStatus, getDomainApsId, getResourceId) {
+function (ResourceStore, when, Deferred, Promise, all, array, dojoxhr, getStateful, Memory, xhr, registry, load, displayError, getDomains, getDomainApsId, getResourceId) {
 
     // creating a modelUser object skeleton to be filled later from user selections
     var modelUser =  getStateful({
@@ -62,7 +61,7 @@ function (ResourceStore, when, Deferred, Promise, all, array, dojoxhr, getStatef
                 ],
             store: store,
             // selectionMode defines whether the selector will be a radiobutton ('single') or checkbox ('multiple')
-            selectionMode: "multiple",
+            selectionMode: "single",
             // Id of an APS view of a "detail" view in the "master-detail" scenario. 
             // If this attribute is defined, a column with type: 'resourceName' will be rendered as a link. 
             // After clicking this link a user will be automatically redirected to a view with apsResourceViewId
@@ -87,13 +86,14 @@ function (ResourceStore, when, Deferred, Promise, all, array, dojoxhr, getStatef
                                     modelUser.name =  arrayResult[0].name;
                                     modelUser.dom_id = arrayResult[0].apsId;
                                     modelUser.apsdomain.aps.id = arrayResult[0].apsId;
+                                    modelUser.status = '  ';
                                     
                                     getResourceId(modelUser.name).then(function(resultResID){
                                         
                                         console.log("resultResID.length");
                                         console.log(resultResID.length);
 
-                                        if (resultResID.length == 0) { // add resource only if it is not existing
+                                        if (resultResID.length === 0) { // add resource only if it is not existing
                                            when(storeAddDomain.put(modelUser), function() {
                                                grid.refresh();
                                                aps.apsc.gotoView("isitup-domains-view");
@@ -149,47 +149,42 @@ function findHash(hash, data) {
       return data[dataLen].status;
     }
   }
-  return false;
+  return '';
 }
 
-    var isitupDomIdArray = [];
-    var promises = [];
-    var array_idomains;
+    //var isitupDomIdArray = [];
+    var array_idomains = [];
 
     isitup_domainStore.query().then( function(data) {
-        console.log(" --- 1 --- ", data);
+        console.log(" --- 1 --- ", array_idomains=data);
          return all(data.map(function(item) {
-            isitupDomIdArray.push( {dom_id: item.dom_id, status: item.status} ); // array contains a list of aps.id for resources "http://shelikhov.net/isitup2/isitup_domain/2.0" 
-            array_idomains = data;
             return xhr.get('/aps/2/resources/' + item.aps.id + '/getstatus');
         }));
-    }).then(function(v){ 
-        console.log(" --- Saved ---- ");
+    }).then(function(){
+        console.log(" --- array_idomains ---");
         console.dir(array_idomains);
 
         domainStore.query().then(function(poa_domains) {
-            console.log(" --- 3 --- ");
-            console.dir(poa_domains);
+            console.log(" --- 2 --- ");
+            //console.dir(poa_domains);
             var i=1;
-            poa_domains.forEach( function(poaDomain) { // просматриваем все POA домены и выставляем Monitoring status в "yes", если есть ссылка на ресурс isitup_domain:
+            poa_domains.forEach( function(poaDomain) {
                         //console.dir(item);
-                        console.log("======= hash search =====");
-                        console.log("====== id ======", poaDomain.aps.id);
-                        console.dir(array_idomains);
-                        console.dir( findHash(poaDomain.aps.id, array_idomains) );
+                        //console.log("======= hash search =====");
+                        //console.log("====== id ======", poaDomain.aps.id);
+                        //console.dir(array_idomains);
+                        //console.dir( findHash(poaDomain.aps.id, array_idomains) );
                         store.add({
-                            id: i, 
-                            name: poaDomain.name, 
-                            monitoring: findHash(poaDomain.aps.id, array_idomains) == false ? 'no' : 'yes', 
-                            status: findHash(poaDomain.aps.id, array_idomains), 
-                            apsId: poaDomain.aps.id 
+                            id: i,
+                            name: poaDomain.name,
+                            monitoring: findHash(poaDomain.aps.id, array_idomains) === '' ? 'no' : 'yes',
+                            status: findHash(poaDomain.aps.id, array_idomains) ,
+                            apsId: poaDomain.aps.id
                         });
                 i++;
             });
             load(widgets);
-
         });
-    
     });
 
 

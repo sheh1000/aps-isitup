@@ -1,15 +1,16 @@
-<application packaged="2014-12-04T17:42:57" version="2.0" xmlns="http://aps-standard.org/ns/2">
+<application packaged="2015-01-14T13:43:02" version="2.0" xmlns="http://aps-standard.org/ns/2">
 
     <id>http://shelikhov.net/isitup2</id>
     <name>isItUp2</name>
-    <version>1.03</version>
-    <release>1</release>
+    <version>1.06</version>
+    <release>2</release>
+    <homepage>https://github.com/sheh1000/aps-isitup</homepage>
     <vendor>
         <name>Shelikhov</name>
         <homepage>http://shelikhov.net/contact</homepage>
     </vendor>
     <packager>
-        <name>Shelikhov, Inc</name>
+        <name>Shelikhov</name>
         <homepage>http://shelikhov.net/contact</homepage>
     </packager>
 	<presentation>
@@ -38,6 +39,12 @@
 			<version release="1" version="1.03">
 				<entry>Changes in upgrade match.</entry>
 			</version>
+			<version release="1" version="1.06">
+				<entry>Endpoint is working fine.</entry>
+			</version>
+			<version release="2" version="1.06">
+				<entry>Fixed minor bugs</entry>
+			</version>
 		</changelog>
 		<categories>
 			<category>Samples</category>
@@ -56,7 +63,6 @@
 				</view>
 			</item>
 		</navigation>
-
 	</presentation>
 
     <license-agreement>
@@ -70,6 +76,7 @@
 
     <service id="applications">
 		
+
 <schema path="schemas/applications.schema.gen"/>
 <code engine="php" path="scripts/applications.php"/>
 
@@ -77,32 +84,34 @@
 			<name>IsItUp Application</name>
 			<summary>IsItUp application global service</summary>
 			<infolinks>
-				<link class="deployment-guide" href="http://parallels.com/link-to-deployment-guide">Deployment Guide</link>
+				<link class="deployment-guide" href="file:///docs/Deployment_guide.docx">Deployment Guide</link>
 				<link class="support" href="http://parallels.com/link-to-support">Support Guide</link>
 			</infolinks>
 		</presentation>
 	</service>
 <service id="contexts">
 		
+
 <schema path="schemas/contexts.schema.gen"/>
 <code engine="php" path="scripts/contexts.php"/>
 
 		<presentation>
-			<name>IsItUp Services Management </name>
+			<name>IsItUp Services Management</name>
 			<summary>IsItUp Services Management context for the customer</summary>
 			<infolinks>
 				<link class="deployment-guide" href="http://parallels.com/link-to-deployment-guide">Deployment Guide</link>
 				<link class="support" href="http://parallels.com/link-to-support">Support Guide</link>
 			</infolinks>
 			<entry-points>
-				<entry class="aps2-view" dst="http://shelikhov.net/isitup#isitup-domains-view">
+				<entry class="aps2-view" dst="http://shelikhov.net/isitup2#isitup-domains-view">
 					<label>Status of domains</label>
 				</entry>
 			</entry-points>
 		</presentation>
 	</service>
-<service id="isitup_domains ">
+<service id="isitup_domains">
 		
+
 <schema path="schemas/isitup_domains.schema.gen"/>
 <code engine="php" path="scripts/isitup_domains.php"/>
 
@@ -113,11 +122,6 @@
 				<link class="deployment-guide" href="http://parallels.com/link-to-deployment-guide">Deployment Guide</link>
 				<link class="support" href="http://parallels.com/link-to-support">Support Guide</link>
 			</infolinks>
-			<entry-points>
-				<entry class="aps2-view" dst="http://shelikhov.net/isitup#subscriptions.new-1">
-					<label>Add domain for watching</label>
-				</entry>
-			</entry-points>
 		</presentation>
 	</service>
 </application>
